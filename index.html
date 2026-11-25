@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Arisan Berjaya</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<?!= include('css'); ?>
+</head>
+<body>
+
+<!-- ==================== LOGIN ==================== -->
+<section id="vLogin" class="login-wrap">
+  <div class="login-art">
+    <div class="blob" style="width:360px;height:360px;right:-120px;top:-100px;background:radial-gradient(circle,rgba(34,197,94,.18),transparent 70%)"></div>
+    <div class="blob" style="width:300px;height:300px;left:-80px;bottom:-80px;background:radial-gradient(circle,rgba(99,102,241,.12),transparent 70%)"></div>
+    <div>
+      <div class="brand"><div class="logo"><i data-ic="leaf" data-s="22"></i></div><div><b>Arisan Berjaya</b><small>PT. Berjaya Makmur Indonesia</small></div></div>
+      <h1>Arisan digital yang <span>rapi, transparan</span>, dan bikin berjaya.</h1>
+      <p class="lead">Kelola grup, setoran, dan undian arisan dalam satu aplikasi. Pantau semuanya dari laptop atau langsung dari HP kamu.</p>
+    </div>
+    <div class="art-cards">
+      <div class="art-card"><div class="art-ic" style="background:#2E9E5B"><i data-ic="wallet"></i></div><div><b>Setoran tercatat otomatis</b><small>Verifikasi cepat oleh admin</small></div></div>
+      <div class="art-card"><div class="art-ic" style="background:#6366F1"><i data-ic="gift"></i></div><div><b>Undian transparan</b><small>Kocok acak atau urutan tetap</small></div></div>
+      <div class="art-card"><div class="art-ic" style="background:#EF5466"><i data-ic="shield"></i></div><div><b>Login aman dengan PIN</b><small>PIN terenkripsi di database</small></div></div>
+    </div>
+  </div>
+  <div class="login-panel">
+    <form class="login-card card" id="fLogin" onsubmit="event.preventDefault(); doLogin();" autocomplete="on">
+      <div class="brand mob" style="margin-bottom:22px"><div class="logo"><i data-ic="leaf" data-s="22"></i></div><div><b>Arisan Berjaya</b><small>PT. Berjaya Makmur Indonesia</small></div></div>
+      <h2>Masuk ke akun kamu 👋</h2>
+      <p class="mut" style="margin-top:6px">Gunakan No. HP / ID Peserta dan PIN 6 digit.</p>
+      <label class="lbl" for="lgId">No. HP / ID Peserta</label>
+      <div class="inp-ic"><i data-ic="user" data-s="18"></i><input class="inp" id="lgId" name="username" autocomplete="username" placeholder="08xxxxxxxxxx atau USR-0001"></div>
+      <label class="lbl" for="lgPin">PIN</label>
+      <div class="pin" id="pinBox">
+        <input id="lgPin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="current-password" oninput="onPinInput(this)" onfocus="pinFocus(true)" onblur="pinFocus(false)">
+        <span></span><span></span><span></span><span></span><span></span><span></span>
+      </div>
+      <button class="btn btn-pri btn-block" id="btnLogin" type="submit" style="margin-top:22px;height:48px">Masuk <i data-ic="right" data-s="18"></i></button>
+      <p class="hint" style="text-align:center;margin-top:14px">Lupa PIN? Hubungi admin untuk reset PIN.</p>
+      <div class="preview-box hidden" id="previewBox">
+        <p>🧪 Mode Preview (backend belum terhubung). Lihat tampilan UI:</p>
+        <div class="row"><button type="button" class="btn btn-ghost btn-sm" onclick="previewAs('Admin')">UI Admin</button><button type="button" class="btn btn-ghost btn-sm" onclick="previewAs('Peserta')">UI Peserta</button></div>
+      </div>
+    </form>
+  </div>
+</section>
+
+<!-- ==================== ADMIN ==================== -->
+<section id="vAdmin" class="hidden">
+  <div class="overlay" id="sbOverlay" onclick="toggleSidebar(false)"></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><div class="logo"><i data-ic="leaf" data-s="22"></i></div><div><b>Arisan Berjaya</b><small>PT. Berjaya Makmur Indonesia</small></div></div>
+    <nav class="menu" id="adminMenu"></nav>
+    <div class="sb-promo">
+      Sedikit demi sedikit,<br>lama-lama jadi <span style="color:var(--pri)">berjaya</span> 🌱
+      <button class="btn btn-pri" onclick="go('undian')">Kocok Undian <i data-ic="right" data-s="14"></i></button>
+      <i class="leaf" data-ic="leaf" data-s="70"></i>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <button class="icon-btn only-m" onclick="toggleSidebar(true)" aria-label="Menu"><i data-ic="menu"></i></button>
+      <div class="brand only-m" style="gap:8px"><b style="font-size:16px">Arisan Berjaya</b></div>
+      <div class="search">
+        <i data-ic="search" data-s="18"></i>
+        <input class="inp" id="gSearch" placeholder="Cari peserta atau ID transaksi..." autocomplete="off" oninput="onGlobalSearch(this.value)" onfocus="onGlobalSearch(this.value)">
+        <div class="search-drop hidden" id="gDrop"></div>
+      </div>
+      <div class="top-act">
+        <button class="icon-btn" onclick="go('setoran','Menunggu Verifikasi')" title="Setoran menunggu verifikasi" aria-label="Notifikasi"><i data-ic="bell"></i><span class="dot-badge hidden" id="notifBadge">0</span></button>
+        <div class="vsep"></div>
+        <div style="position:relative">
+          <button class="me" onclick="toggleDrop('meDrop',event)"><span id="meAv"></span><span class="me-name"><span id="meName">Admin</span><small>Administrator</small></span><i data-ic="down" data-s="16"></i></button>
+          <div class="drop hidden" id="meDrop">
+            <button onclick="formFoto()"><i data-ic="camera" data-s="18"></i>Ganti Foto Profil</button>
+            <button onclick="formGantiPin()"><i data-ic="key" data-s="18"></i>Ganti PIN</button>
+            <button onclick="go('pengaturan')"><i data-ic="settings" data-s="18"></i>Pengaturan</button>
+            <button class="red" onclick="doLogout()"><i data-ic="logout" data-s="18"></i>Keluar</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- DASHBOARD -->
+    <div id="pg-dashboard" class="page">
+      <div class="dash">
+        <div class="dash-left">
+          <div class="card hero">
+            <div class="blob" style="width:280px;height:280px;right:120px;top:-140px;background:radial-gradient(circle,rgba(255,255,255,.8),transparent 70%)"></div>
+            <div class="hero-top">
+              <div class="hero-art">
+                <svg viewBox="0 0 120 120" width="116" height="116" fill="none">
+                  <circle cx="60" cy="60" r="56" fill="#fff" opacity=".7"/>
+                  <circle cx="60" cy="60" r="44" fill="#E3F4EA"/>
+                  <ellipse cx="60" cy="84" rx="26" ry="7" fill="#C9E9D6"/>
+                  <rect x="40" y="62" width="40" height="20" rx="6" fill="#1F7A4D"/>
+                  <rect x="44" y="52" width="32" height="14" rx="5" fill="#2E9E5B"/>
+                  <circle cx="60" cy="40" r="13" fill="#F5C451" stroke="#E0A92E" stroke-width="2.5"/>
+                  <path d="M60 33v14M56 36.5h6a2.5 2.5 0 0 1 0 5h-4a2.5 2.5 0 0 0 0 5h6" stroke="#B7791F" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M86 52c8-2 12-9 12-16-7 0-13 4-14 11" fill="#57B07C"/>
+                  <path d="M84 60c-1-9 3-17 10-21" stroke="#1F7A4D" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M32 50c-7-3-10-9-9-15 6 1 11 5 11 11" fill="#8FD3A8"/>
+                </svg>
+              </div>
+              <div class="hero-txt">
+                <p class="mut" id="hSalam">Selamat Pagi,</p>
+                <h1><span id="hNama">Admin</span> <span id="hEmoji">☀️</span></h1>
+                <p class="quote" id="hQuote">"Sedikit demi sedikit, lama-lama jadi berjaya."</p>
+              </div>
+              <div class="hero-date glass">
+                <div class="hd-row"><span class="hic"><i data-ic="calendar" data-s="16"></i></span><div><b id="hTgl">-</b><small id="hHijri"></small></div></div>
+                <div class="hd-next"><small>Jatuh tempo terdekat</small><b id="hNext">-</b></div>
+              </div>
+            </div>
+            <div class="stats">
+              <div class="stat s-mint"><div class="st-ic"><i data-ic="users"></i></div><div><small>Peserta Aktif</small><b id="stPeserta">0</b><em id="stPesertaSub">&nbsp;</em></div></div>
+              <div class="stat s-lav"><div class="st-ic"><i data-ic="layers"></i></div><div><small>Grup Berjalan</small><b id="stGrup">0</b><em id="stGrupSub">&nbsp;</em></div></div>
+              <div class="stat s-pink"><div class="st-ic"><i data-ic="clock"></i></div><div><small>Menunggu Verifikasi</small><b id="stMenunggu">0</b><em id="stMenungguSub">&nbsp;</em></div></div>
+              <div class="stat s-green"><div class="st-ic"><i data-ic="banknote"></i></div><div><small>Dana Bulan Ini</small><b class="money" id="stDana">Rp 0</b><em id="stDanaSub">&nbsp;</em></div></div>
+            </div>
+          </div>
+
+          <div class="row3">
+            <div class="card hov">
+              <div class="card-h"><h3><span class="hic"><i data-ic="coins" data-s="16"></i></span>Dana Terkumpul</h3><select class="inp sel-mini" id="cBulan" onchange="gantiBulan(this.value)"></select></div>
+              <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><span class="big-num" id="cTotal">Rp 0</span><span id="cPersen"></span></div>
+              <div class="chart-box"><canvas id="chDana"></canvas></div>
+            </div>
+            <div class="card hov">
+              <div class="card-h"><h3><span class="hic" style="background:#EEF0FF;color:#6366F1"><i data-ic="zap" data-s="16"></i></span>Kepatuhan Setoran</h3></div>
+              <div class="donut-wrap">
+                <div class="donut"><canvas id="chDonut"></canvas><div class="c"><b id="dPersen">0%</b><small>lunas</small></div></div>
+                <div class="legend" id="dLegend"></div>
+              </div>
+              <p class="small mut" style="margin-top:14px">Putaran aktif seluruh grup berjalan</p>
+            </div>
+            <div class="card hov">
+              <div class="card-h"><h3><span class="hic" style="background:#FDECEF;color:#EF5466"><i data-ic="activity" data-s="16"></i></span>Aktivitas Terbaru</h3><button class="link" onclick="lihatLog()">Lihat semua <i data-ic="right" data-s="12"></i></button></div>
+              <div id="dAktivitas"></div>
+            </div>
+          </div>
+
+          <div class="row2">
+            <div class="card">
+              <div class="card-h"><h3><span class="hic"><i data-ic="layers" data-s="16"></i></span>Grup Arisan Aktif</h3><button class="link" onclick="go('grup')">Lihat semua <i data-ic="right" data-s="12"></i></button></div>
+              <div class="ggrid" id="dGrup"></div>
+            </div>
+            <div class="card">
+              <div class="card-h"><h3><span class="hic" style="background:#FFF1E0;color:#F08C2E"><i data-ic="zap" data-s="16"></i></span>Aksi Cepat</h3></div>
+              <div class="qa">
+                <button style="background:#E9F7EF" onclick="formPeserta()"><span class="q-ic" style="background:#2E9E5B"><i data-ic="plus"></i></span>Tambah Peserta</button>
+                <button style="background:#EEF0FF" onclick="formGrup()"><span class="q-ic" style="background:#6366F1"><i data-ic="layers"></i></span>Buat Grup</button>
+                <button style="background:#E6F2FA" onclick="formCatat()"><span class="q-ic" style="background:#1D8FD1"><i data-ic="wallet"></i></span>Catat Setoran</button>
+                <button style="background:#FDECEF" onclick="go('undian')"><span class="q-ic" style="background:#EF5466"><i data-ic="gift"></i></span>Kocok Undian</button>
+                <button style="background:#FFF1E0" onclick="go('setoran','Menunggu Verifikasi')"><span class="q-ic" style="background:#F08C2E"><i data-ic="check"></i></span>Verifikasi</button>
+                <button style="background:#F3EDFF" onclick="go('laporan')"><span class="q-ic" style="background:#8B5CF6"><i data-ic="chart"></i></span>Laporan</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dash-right">
+          <div class="card">
+            <div class="card-h"><h3><span class="hic"><i data-ic="calendar" data-s="16"></i></span>Kalender</h3><button class="link" onclick="go('kalender')">Lihat semua <i data-ic="right" data-s="12"></i></button></div>
+            <div class="cal" id="dCal"></div>
+          </div>
+          <div class="card">
+            <div class="card-h"><h3><span class="hic" style="background:#FFF1E0;color:#F08C2E"><i data-ic="clock" data-s="16"></i></span>Jatuh Tempo Terdekat</h3><button class="link" onclick="go('setoran')">Lihat semua <i data-ic="right" data-s="12"></i></button></div>
+            <div id="dTempo"></div>
+          </div>
+          <div class="card dark" id="dWin">
+            <div class="ring" style="width:220px;height:220px;right:-70px;top:-70px"></div>
+            <div class="ring" style="width:140px;height:140px;right:-30px;top:-30px"></div>
+            <div class="card-h" style="position:relative;z-index:1"><h3><span class="hic" style="background:rgba(255,255,255,.15);color:#FCD34D"><i data-ic="trophy" data-s="16"></i></span>Pemenang Terakhir</h3></div>
+            <div id="dWinBody"><p class="mut">Belum ada undian.</p></div>
+          </div>
+        </div>
+
+        <div class="bottom3">
+          <div class="card hov">
+            <div class="card-h"><h3><span class="hic"><i data-ic="trophy" data-s="16"></i></span>Peserta Paling Disiplin</h3></div>
+            <div id="dTop"></div>
+          </div>
+          <div class="card hov">
+            <div class="card-h"><h3><span class="hic" style="background:#E6F2FA;color:#1D8FD1"><i data-ic="banknote" data-s="16"></i></span>Ringkasan Keuangan</h3></div>
+            <div id="dFin"></div>
+          </div>
+          <div class="card banner">
+            <div style="position:relative;z-index:1">
+              <h4>Menabung Hari Ini,<br>Berjaya Esok Hari 💚</h4>
+              <p class="small mut" style="margin-top:10px">PT. Berjaya Makmur Indonesia</p>
+            </div>
+            <i class="plant" data-ic="sprout" data-s="130"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GRUP -->
+    <div id="pg-grup" class="page hidden">
+      <div class="page-h"><div><h2>Grup Arisan</h2><p class="mut">Kelola grup, anggota, dan progres putaran.</p></div><button class="btn btn-pri" onclick="formGrup()"><i data-ic="plus" data-s="18"></i>Buat Grup</button></div>
+      <div class="ggrid" id="gList" style="grid-template-columns:repeat(auto-fill,minmax(230px,1fr))"></div>
+    </div>
+
+    <!-- PESERTA -->
+    <div id="pg-peserta" class="page hidden">
+      <div class="page-h"><div><h2>Peserta</h2><p class="mut">Kelola data peserta arisan &amp; PIN login.</p></div><button class="btn btn-pri" onclick="formPeserta()"><i data-ic="plus" data-s="18"></i>Tambah Peserta</button></div>
+      <div class="card p0">
+        <div class="toolbar">
+          <div class="inp-ic grow"><i data-ic="search" data-s="18"></i><input class="inp" id="pQ" placeholder="Cari nama, No. HP, atau ID..." oninput="cariPeserta()"></div>
+          <select class="inp w-auto" id="pStatus" onchange="S.L.peserta.reset()"><option value="">Semua Status</option><option>Aktif</option><option>Nonaktif</option></select>
+        </div>
+        <div class="lh li-p hide-m"><span>Peserta</span><span>No. HP</span><span>Grup</span><span>Login Terakhir</span><span>Status</span><span style="text-align:right">Aksi</span></div>
+        <div id="pList"></div>
+      </div>
+    </div>
+
+    <!-- SETORAN -->
+    <div id="pg-setoran" class="page hidden">
+      <div class="page-h"><div><h2>Setoran</h2><p class="mut">Verifikasi dan catat setoran peserta.</p></div><button class="btn btn-pri" onclick="formCatat()"><i data-ic="plus" data-s="18"></i>Catat Setoran</button></div>
+      <div class="card p0">
+        <div class="tabs" id="sTabs"></div>
+        <div class="toolbar">
+          <div class="inp-ic grow"><i data-ic="search" data-s="18"></i><input class="inp" id="sQ" placeholder="Cari ID transaksi atau nama peserta..." oninput="cariSetoran()"></div>
+          <select class="inp w-auto" id="sGrup" onchange="S.L.setoran.reset()"><option value="">Semua Grup</option></select>
+        </div>
+        <div class="lh li-s hide-m"><span>ID Transaksi</span><span>Peserta</span><span>Grup</span><span>Nominal</span><span>Status</span><span style="text-align:right">Aksi</span></div>
+        <div id="sList"></div>
+      </div>
+    </div>
+
+    <!-- GALERI BUKTI -->
+    <div id="pg-galeri" class="page hidden">
+      <div class="page-h"><div><h2>Galeri Bukti</h2><p class="mut">Audit semua struk setoran per grup &amp; putaran.</p></div></div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="filters" style="grid-template-columns:2fr 1fr 1fr">
+          <div><label class="lbl" for="gaGrup">Grup Arisan</label><select class="inp" id="gaGrup" onchange="galeriGantiGrup()"></select></div>
+          <div><label class="lbl" for="gaPut">Putaran</label><select class="inp" id="gaPut" onchange="S.L.galeri.reset()"></select></div>
+          <div><label class="lbl" for="gaSt">Status</label><select class="inp" id="gaSt" onchange="S.L.galeri.reset()"><option value="">Semua</option><option value="Menunggu Verifikasi">Menunggu</option><option>Lunas</option><option>Ditolak</option><option value="Belum Setor">Belum Setor</option></select></div>
+        </div>
+      </div>
+      <div class="gal-sum" id="gaSum"></div>
+      <div class="gal-grid" id="gaList"></div>
+    </div>
+
+    <!-- UNDIAN -->
+    <div id="pg-undian" class="page hidden">
+      <div class="page-h"><div><h2>Undian / Kocokan</h2><p class="mut">Tentukan pemenang tiap putaran secara transparan.</p></div></div>
+      <div class="und-grid">
+        <div class="card">
+          <div class="card-h"><h3><span class="hic"><i data-ic="gift" data-s="16"></i></span>Kocok Undian</h3></div>
+          <label class="lbl" style="margin-top:0" for="uGrup">Pilih Grup Arisan</label>
+          <select class="inp" id="uGrup" onchange="undianInfo()"></select>
+          <div id="uInfo"></div>
+        </div>
+        <div class="card p0">
+          <div class="card-h pad"><h3><span class="hic" style="background:#F3EDFF;color:#8B5CF6"><i data-ic="trophy" data-s="16"></i></span>Riwayat Undian</h3></div>
+          <div id="uList" style="margin-top:10px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KALENDER -->
+    <div id="pg-kalender" class="page hidden">
+      <div class="page-h"><div><h2>Kalender</h2><p class="mut">Jadwal jatuh tempo setoran dan undian semua grup.</p></div></div>
+      <div class="kal-grid">
+        <div class="card">
+          <div class="cal big" id="kCal"></div>
+          <div class="cal-legend"><span><i class="d-tempo"></i>Jatuh tempo aktif</span><span><i class="d-undian"></i>Jadwal undian</span><span><i class="d-telat"></i>Ada yang telat</span><span><i class="d-selesai"></i>Selesai</span></div>
+        </div>
+        <div class="card">
+          <div class="card-h"><h3 id="kTitle">Agenda</h3></div>
+          <div id="kList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LAPORAN -->
+    <div id="pg-laporan" class="page hidden">
+      <div class="page-h"><div><h2>Laporan</h2><p class="mut">Rekap setoran, pencairan, dan saldo per grup.</p></div></div>
+      <div class="card">
+        <form class="filters" onsubmit="event.preventDefault(); terapkanLaporan();">
+          <div><label class="lbl" for="lGrup">Grup</label><select class="inp" id="lGrup"><option value="">Semua Grup</option></select></div>
+          <div><label class="lbl" for="lDari">Dari</label><input class="inp" type="date" id="lDari"></div>
+          <div><label class="lbl" for="lSampai">Sampai</label><input class="inp" type="date" id="lSampai"></div>
+          <div><label class="lbl" for="lStatus">Status</label><select class="inp" id="lStatus"><option value="">Semua</option><option>Lunas</option><option>Menunggu Verifikasi</option><option>Ditolak</option></select></div>
+          <div class="btns" style="display:flex;gap:8px"><button class="btn btn-pri" type="submit">Terapkan</button><button class="btn btn-ghost" type="button" id="btnExport" onclick="exportLap()"><i data-ic="download" data-s="16"></i>Export</button></div>
+        </form>
+      </div>
+      <div class="mini-stats" id="lSum"></div>
+      <div class="card p0" style="margin-bottom:20px"><div class="card-h pad"><h3>Saldo per Grup</h3></div><div style="overflow-x:auto;margin-top:12px"><table class="tbl" id="lGrupTbl"></table></div></div>
+      <div class="card p0">
+        <div class="card-h pad"><h3>Detail Transaksi</h3></div>
+        <div class="lh li-l hide-m" style="margin-top:12px"><span>ID Transaksi</span><span>Peserta</span><span>Grup</span><span>Nominal</span><span>Status</span></div>
+        <div id="lList"></div>
+      </div>
+    </div>
+
+    <!-- PENGATURAN -->
+    <div id="pg-pengaturan" class="page hidden">
+      <div class="page-h"><div><h2>Pengaturan</h2><p class="mut">Identitas aplikasi &amp; info rekening untuk peserta.</p></div></div>
+      <div class="set-grid">
+        <form class="card" onsubmit="event.preventDefault(); simpanPengaturan();">
+          <div class="card-h"><h3><span class="hic"><i data-ic="settings" data-s="16"></i></span>Profil Aplikasi</h3></div>
+          <div class="grid2">
+            <div><label class="lbl" for="setNama_Aplikasi">Nama Aplikasi</label><input class="inp" id="setNama_Aplikasi" maxlength="60"></div>
+            <div><label class="lbl" for="setNama_Perusahaan">Nama Perusahaan</label><input class="inp" id="setNama_Perusahaan" maxlength="80"></div>
+            <div><label class="lbl" for="setKontak_Admin">Kontak Admin</label><input class="inp" id="setKontak_Admin" maxlength="40"></div>
+            <div><label class="lbl" for="setNama_Bank">Nama Bank</label><input class="inp" id="setNama_Bank" maxlength="40"></div>
+            <div><label class="lbl" for="setNo_Rekening">No. Rekening</label><input class="inp" id="setNo_Rekening" maxlength="40"></div>
+            <div><label class="lbl" for="setAtas_Nama">Atas Nama</label><input class="inp" id="setAtas_Nama" maxlength="80"></div>
+          </div>
+          <label class="lbl" for="setQuote">Quote Motivasi (tampil di dashboard)</label>
+          <textarea class="inp" id="setQuote" maxlength="200"></textarea>
+          <div class="form-actions"><button class="btn btn-pri" type="submit" id="btnSet">Simpan Pengaturan</button></div>
+        </form>
+        <div class="card">
+          <div class="card-h"><h3><span class="hic" style="background:#FDECEF;color:#EF5466"><i data-ic="key" data-s="16"></i></span>Keamanan Akun</h3></div>
+          <p class="mut small" style="line-height:1.6">PIN disimpan dalam bentuk hash SHA-256 + salt. Admin default wajib mengganti PIN setelah login pertama.</p>
+          <button class="btn btn-soft btn-block mt" onclick="formGantiPin()"><i data-ic="key" data-s="16"></i>Ganti PIN Saya</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</section>
+
+<!-- ==================== PESERTA ==================== -->
+<section id="vPeserta" class="hidden">
+  <header class="p-top">
+    <div class="brand"><div class="logo"><i data-ic="leaf" data-s="18"></i></div><div><b>Arisan Berjaya</b><small>PT. Berjaya Makmur Indonesia</small></div></div>
+    <button class="me" onclick="goP('profil')" id="pAv" aria-label="Profil"></button>
+  </header>
+  <main class="p-main">
+    <div id="ps-beranda" class="ppage page">
+      <div class="phero">
+        <div class="blob" style="width:200px;height:200px;right:-60px;top:-60px;background:radial-gradient(circle,rgba(34,197,94,.2),transparent 70%)"></div>
+        <p class="mut" id="psSalam">Selamat Pagi,</p>
+        <h2 id="psNama">Peserta</h2>
+        <p class="mut small" id="psTgl" style="margin-top:4px"></p>
+        <div class="p-chips">
+          <div class="glass p-chip"><small>Total Setoran Lunas</small><b id="psTotal">Rp 0</b></div>
+          <div class="glass p-chip"><small>Grup Diikuti</small><b id="psJml">0</b></div>
+        </div>
+      </div>
+      <div class="sec-t">Grup Arisan Saya</div>
+      <div id="psGrup"></div>
+      <div class="sec-t">Pemenang Terbaru 🏆</div>
+      <div class="card" style="padding:6px 18px" id="psWin"></div>
+    </div>
+
+    <div id="ps-setoran" class="ppage page hidden">
+      <div class="sec-t" style="margin-top:6px">Kirim Setoran</div>
+      <div class="rek" id="psRek"></div>
+      <form class="card" style="margin-top:14px" onsubmit="event.preventDefault(); kirimSetoranP();">
+        <label class="lbl" style="margin-top:0" for="psGrupSel">Grup Arisan</label>
+        <select class="inp" id="psGrupSel" onchange="onSetorGrup()"></select>
+        <div class="sum-box" id="psSum"></div>
+        <label class="lbl">Metode Pembayaran</label>
+        <div class="pills">
+          <label class="pill-opt"><input type="radio" name="psMetode" value="Transfer" checked onchange="onMetodeP()"><span><i data-ic="banknote" data-s="16"></i>Transfer</span></label>
+          <label class="pill-opt"><input type="radio" name="psMetode" value="Tunai" onchange="onMetodeP()"><span><i data-ic="wallet" data-s="16"></i>Tunai</span></label>
+        </div>
+        <label class="lbl">Bukti Struk <span id="psStrukReq" style="color:var(--red)">*wajib untuk transfer</span></label>
+        <div id="psUpl"></div>
+        <label class="lbl" for="psCatatan">Catatan (opsional)</label>
+        <textarea class="inp" id="psCatatan" maxlength="200" placeholder="Contoh: transfer dari rekening a.n. ..."></textarea>
+        <button class="btn btn-pri btn-block mt" type="submit" id="btnSetor" style="height:48px">Kirim Konfirmasi Setoran</button>
+        <p class="hint" style="text-align:center">Setoran akan berstatus <b>Menunggu Verifikasi</b> sampai dicek admin.</p>
+      </form>
+    </div>
+
+    <div id="ps-riwayat" class="ppage page hidden">
+      <div class="sec-t" style="margin-top:6px">Riwayat Setoran</div>
+      <div class="card p0"><div id="psRiwayat"></div></div>
+    </div>
+
+    <div id="ps-profil" class="ppage page hidden">
+      <div class="card prof" id="psProf"></div>
+      <div class="card" style="margin-top:14px;padding:6px 18px" id="psProfInfo"></div>
+      <button class="btn btn-soft btn-block mt" onclick="formGantiPin()"><i data-ic="key" data-s="16"></i>Ganti PIN</button>
+      <button class="btn btn-ghost btn-block mt" style="color:var(--red)" onclick="doLogout()"><i data-ic="logout" data-s="16"></i>Keluar</button>
+    </div>
+  </main>
+  <nav class="bnav" id="bnav">
+    <button class="bn on" data-p="beranda" onclick="goP('beranda')"><i data-ic="home" data-s="22"></i>Beranda</button>
+    <button class="bn" data-p="setoran" onclick="goP('setoran')"><i data-ic="wallet" data-s="22"></i>Setoran</button>
+    <button class="bn" data-p="riwayat" onclick="goP('riwayat')"><i data-ic="list" data-s="22"></i>Riwayat</button>
+    <button class="bn" data-p="profil" onclick="goP('profil')"><i data-ic="user" data-s="22"></i>Profil</button>
+  </nav>
+</section>
+
+<!-- ==================== MODAL, TOAST, UNDIAN OVERLAY ==================== -->
+<div class="modal-bg hidden" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modalBox" role="dialog" aria-modal="true">
+    <div class="m-head"><h3 id="mTitle">Judul</h3><button class="icon-btn sm" onclick="closeModal()" aria-label="Tutup"><i data-ic="x" data-s="16"></i></button></div>
+    <div class="m-body" id="mBody"></div>
+    <div class="m-foot" id="mFoot"></div>
+  </div>
+</div>
+<div class="toasts" id="toasts"></div>
+<div class="draw hidden" id="draw">
+  <div class="draw-box">
+    <div class="draw-ic" id="drawIc"><i data-ic="gift" data-s="40"></i></div>
+    <p class="draw-sub" id="drawSub">Mengocok nama peserta...</p>
+    <div class="draw-name" id="drawName">...</div>
+    <div id="drawRes" class="draw-res hidden"></div>
+  </div>
+</div>
+
+<?!= include('js'); ?>
+</body>
+</html>
