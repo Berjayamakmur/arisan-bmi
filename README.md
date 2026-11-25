@@ -69,3 +69,11 @@ Workflow `.github/workflows/deploy.yml` mengirim kode ke Apps Script setiap kali
 - `Kwitansi`
 
 File di folder-folder ini dibagikan sebagai *siapa saja yang punya link boleh melihat*, supaya gambar bisa tampil di aplikasi. Kalau akun Workspace kamu memblokir sharing publik, aplikasi otomatis memuat gambar lewat backend. Cara ini sedikit lebih lambat, tapi tetap jalan.
+
+## Versi online (GitHub Pages)
+
+Folder `docs/` berisi halaman pembungkus yang memuat web app Apps Script dalam iframe.
+
+- Aktifkan sekali: **Settings → Pages → Source: Deploy from a branch → `main` / `docs`**.
+- Alamatnya nanti: https://berjayamakmur.github.io/arisan-bmi/
+- Kalau web app di-deploy ulang dengan URL `/exec` baru, ganti URL di `docs/index.html`.
